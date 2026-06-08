@@ -1,0 +1,83 @@
+[candidate]
+name = "Hamza Kritet"
+email = "Hamzakritet02@gmail.com"
+phone = "06 23 65 57 98"
+base_location = "Arcueil, France"
+languages = ["fr", "en", "ar"]
+
+[aspirations]
+# What Hamza WANTS — may differ from the CV
+summary = """
+IT & hardware-oriented role that bridges marketing and technical skills.
+Passionate about hardware (laptops, printers, TVs, networking gear), IT tools,
+and process automation. NOT looking for basic IT support (L1 helpdesk),
+but open to L2/L3 as a fallback. Sweet spot: technico-commercial IT,
+IT project coordinator, digital workplace, pre-sales engineer,
+or technical product marketing at a hardware company.
+"""
+preferred_contract = "CDI"
+open_to_cdd = true
+open_to_international = true          # Luxembourg, Germany, UK with sponsorship
+
+[search]
+# Role queries — used verbatim in job platform searches
+# FR = French market queries, EN = international
+roles_fr = [
+    "technico-commercial IT",
+    "commercial IT matériel informatique",
+    "chef de projet digital",
+    "coordinateur IT",
+    "technicien support N2 N3",
+    "ingénieur avant-vente informatique",
+    "chargé de marketing digital IT",
+    "digital workplace",
+    "IT business analyst",
+    "responsable IT PME",
+]
+roles_en = [
+    "IT sales engineer",
+    "pre-sales engineer IT",
+    "technical account manager",
+    "IT project coordinator",
+    "digital workplace specialist",
+    "IT product marketing",
+    "technical marketing manager hardware",
+    "IT coordinator",
+]
+
+# Platform-level location config
+[[search.locations]]
+label = "France"
+country = "FR"
+linkedin_geo = 105015875
+ft_location = ""            # blank = whole France on France Travail
+
+[[search.locations]]
+label = "Paris"
+country = "FR"
+linkedin_geo = 104246759
+ft_location = "Paris (75)"
+
+[[search.locations]]
+label = "Île-de-France"
+country = "FR"
+linkedin_geo = 104246759
+ft_location = "Île-de-France"
+
+[[search.locations]]
+label = "Luxembourg"
+country = "LU"
+linkedin_geo = 104042105
+ft_location = ""            # France Travail is FR-only
+
+[[search.locations]]
+label = "Germany"
+country = "DE"
+linkedin_geo = 101282230
+ft_location = ""
+
+[[search.locations]]
+label = "UK"
+country = "GB"
+linkedin_geo = 101165590
+ft_location = ""
