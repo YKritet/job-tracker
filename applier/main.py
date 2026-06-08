@@ -2,7 +2,7 @@ import os
 import tomllib
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Optional
 from dotenv import load_dotenv
 import typer
 from rich.console import Console
@@ -174,6 +174,42 @@ def serve(
         threading.Timer(0.8, lambda: webbrowser.open(url)).start()
 
     uvicorn.run("applier.server:app", host=host, port=port, reload=False, log_level="warning")
+
+
+@app.command("parse-cv")
+def parse_cv(
+    cv: Annotated[Path, typer.Option("--cv", help="Path to CV PDF")] = Path("assets/cv.pdf"),
+    letter: Annotated[Optional[Path], typer.Option("--letter", help="Path to motivation letter PDF")] = None,
+    output: Annotated[Path, typer.Option("--output", "-o")] = Path("profiles/auto.toml"),
+    name: Annotated[str, typer.Option("--name", help="Override detected candidate name")] = "",
+):
+    """Parse a CV PDF (and optionally a motivation letter) to auto-generate a search profile."""
+    from . import parse as cv_parser
+
+    if not cv.exists():
+        console.print(f"[red]CV not found: {cv}[/red]")
+        console.print("[dim]Drop your CV at assets/cv.pdf or pass --cv path/to/cv.pdf[/dim]")
+        raise typer.Exit(1)
+
+    console.print(f"[cyan]Parsing:[/cyan] {cv}")
+    if letter and letter.exists():
+        console.print(f"[cyan]Parsing:[/cyan] {letter}")
+    elif letter:
+        console.print(f"[yellow]Letter not found ({letter}), skipping[/yellow]")
+
+    result = cv_parser.generate_profile(cv, letter, output, name)
+
+    console.print(f"\n[bold green]Profile written:[/bold green] {output}")
+    console.print(f"  Name:       {result['name'] or '[dim](not detected — edit profile)[/dim]'}")
+    console.print(f"  Email:      {result['email'] or '[dim](not detected)[/dim]'}")
+    if result["categories"]:
+        console.print(f"  Detected:   {', '.join(result['categories'])}")
+    else:
+        console.print("  [yellow]No categories detected — add roles manually in the profile[/yellow]")
+    console.print(f"  FR queries: {result['roles_fr_count']}")
+    console.print(f"  EN queries: {result['roles_en_count']}")
+    console.print(f"\n[dim]Review {output}, then run:[/dim]")
+    console.print(f"  applier search --profile {output}")
 
 
 @app.command()

@@ -86,27 +86,80 @@ Everything saves automatically the moment you change it. You can close the brows
 
 ---
 
-## For Youssef — Running a new search
+## Running a search
 
-### Setup
+### 1. Install
 
-Copy `.env.example` to `.env` and fill in your LinkedIn session cookie if you have one (optional — the tool works without it, just with fewer LinkedIn results):
+```bash
+git clone https://github.com/YKritet/job-tracker.git
+cd job-tracker
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e .
+```
+
+### 2. Add API tokens (optional but recommended)
+
+Copy `.env.example` to `.env`:
 
 ```bash
 cp .env.example .env
-# edit .env and set LINKEDIN_LI_AT=your_cookie_value
 ```
 
-### Run a search
+Then open `.env` and fill in what you have:
+
+**LinkedIn (`LINKEDIN_LI_AT`)** — improves LinkedIn result quality significantly.
+
+How to get it:
+1. Log into [linkedin.com](https://linkedin.com) in your browser
+2. Open DevTools (F12) → **Application** tab → **Cookies** → `linkedin.com`
+3. Find the cookie named `li_at` and copy its value
+4. Paste it into `.env`:
+   ```
+   LINKEDIN_LI_AT=AQEDATxxxxxxxxxxxxxxxx...
+   ```
+
+> The tool works without this cookie — you just get fewer LinkedIn results. France Travail and RemoteOK need no tokens.
+
+**France Travail** — no token needed, uses their public API.
+
+**RemoteOK** — no token needed, uses their public API.
+
+---
+
+### 3. Generate a search profile from your CV
+
+Drop your CV PDF (and optionally your motivation letter) in `assets/` — these are gitignored and never committed.
 
 ```bash
-source .venv/bin/activate
+# minimal
+applier parse-cv --cv assets/cv.pdf
+
+# with motivation letter (improves category detection)
+applier parse-cv --cv assets/cv.pdf --letter assets/letter.pdf
+```
+
+This reads the PDFs, detects what kind of roles match your profile, and writes `profiles/auto.toml`.
+
+**Review and edit `profiles/auto.toml`** before searching — the detected roles are a starting point, not a final list. Trim or add role queries under `roles_fr` and `roles_en` to match what you actually want.
+
+---
+
+### 4. Run a search
+
+```bash
+applier search --profile profiles/auto.toml
+```
+
+Or use the default Hamza profile:
+
+```bash
 applier search
 ```
 
 This scrapes all platforms, saves results to `results/applier.db`, and exports `results/jobs.json`.
 
-### Push to GitHub so Hamza can see the new jobs
+### 5. Push results so others can see new jobs
 
 ```bash
 git add results/jobs.json
@@ -114,14 +167,18 @@ git commit -m "data: update jobs $(date +%Y-%m-%d)"
 git push
 ```
 
-Hamza then runs `git pull` + `applier serve` and sees the new jobs with his tracking intact.
+Others then run `git pull` + `applier serve` and see the new jobs with their tracking intact.
 
 ---
 
 ## Profiles
 
-Job search parameters live in `profiles/hamza.toml`. You can edit:
-- `roles_fr` — French job titles to search
+Search parameters live in `profiles/*.toml`. You can:
+- Generate one automatically: `applier parse-cv --cv assets/cv.pdf`
+- Or copy `profiles/hamza.toml` and edit manually
+
+Key fields:
+- `roles_fr` — French job titles to search (used for FR locations)
 - `roles_en` — English job titles (used for international locations)
 - `locations` — list of cities/countries to search in
 
@@ -131,9 +188,19 @@ Job search parameters live in `profiles/hamza.toml`. You can edit:
 
 | Command | What it does |
 |---|---|
+| `applier parse-cv` | Parse a CV PDF and generate a search profile |
 | `applier search` | Run a full search, save to DB, export JSON |
 | `applier serve` | Start the web UI at http://localhost:5050 |
 | `applier platforms` | List supported platforms |
+
+### Options for `applier parse-cv`
+
+| Option | Default | Description |
+|---|---|---|
+| `--cv` | `assets/cv.pdf` | Path to CV PDF |
+| `--letter` | — | Path to motivation letter PDF (optional) |
+| `--output` | `profiles/auto.toml` | Where to write the generated profile |
+| `--name` | — | Override the detected candidate name |
 
 ### Options for `applier search`
 

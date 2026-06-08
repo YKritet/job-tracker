@@ -6,3 +6,5 @@ dist/
 .venv/
 results/*
 !results/jobs.json
+assets/
+profiles/auto.toml
