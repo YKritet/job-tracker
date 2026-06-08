@@ -14,6 +14,9 @@ dependencies = [
     "beautifulsoup4>=4.12",
     "lxml>=5.0",
     "rich>=13",
+    "openpyxl>=3.1",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
 ]
 
 [project.scripts]
