@@ -166,6 +166,10 @@ td{padding:10px 13px;vertical-align:middle}
 .FranceTravail::before{background:#ffa657}
 .RemoteOK     {background:rgba(63,185,80,.13);color:#3fb950;border-color:rgba(63,185,80,.2)}
 .RemoteOK::before{background:#3fb950}
+.Indeed       {background:rgba(44,149,222,.15);color:#58c8ff;border-color:rgba(88,200,255,.2)}
+.Indeed::before{background:#58c8ff}
+.WTTJ         {background:rgba(139,94,249,.15);color:#c9b1ff;border-color:rgba(139,94,249,.25)}
+.WTTJ::before {background:#c9b1ff}
 
 select.ss{padding:4px 24px 4px 9px;border-radius:100px;font:inherit;font-size:11.5px;
   font-weight:600;cursor:pointer;outline:none;border:1px solid transparent;
@@ -200,6 +204,8 @@ select.ss option{background:var(--s2)}
 .chip-Consulting{background:rgba(139,94,249,.15);color:#c9b1ff;border-color:rgba(139,94,249,.25)}
 .chip-Remote{background:rgba(63,185,80,.1);color:#56d364;border-color:rgba(63,185,80,.2)}
 .chip-Other{background:var(--gray-d);color:var(--gray);border-color:var(--b1)}
+.chip-poste{background:var(--amber-d);color:var(--amber);border-color:rgba(210,153,34,.25)}
+.chip-domain{background:var(--teal-d);color:var(--teal);border-color:rgba(57,211,195,.25)}
 .pulled{font-size:10px;color:var(--t3);margin-top:3px}
 
 .empty{display:none;flex-direction:column;align-items:center;
@@ -286,6 +292,8 @@ select.ss option{background:var(--s2)}
     <option value="">All platforms</option>
     <option>LinkedIn</option>
     <option>FranceTravail</option>
+    <option>Indeed</option>
+    <option>WTTJ</option>
     <option>RemoteOK</option>
   </select>
   <select class="fb" id="ft" onchange="filter()">
@@ -294,6 +302,22 @@ select.ss option{background:var(--s2)}
     <option>Marketing</option><option>Finance</option><option>Consulting</option>
     <option>HR</option><option>Product</option><option>Operations</option>
     <option>Customer</option><option>Remote</option><option>Other</option>
+  </select>
+  <select class="fb" id="fpo" onchange="filter()">
+    <option value="">All postes</option>
+    <option>livreur</option><option>conducteur</option><option>ouvrier</option>
+    <option>stockiste</option><option>vendeur</option><option>it support</option>
+    <option>marketer</option><option>gestion</option><option>ingénieur</option>
+    <option>facteur</option><option>technicien</option><option>opérateur</option>
+    <option>serrurier</option><option>testeur</option>
+  </select>
+  <select class="fb" id="fdo" onchange="filter()">
+    <option value="">All domains</option>
+    <option>logistique</option><option>transport</option><option>grande distribution</option>
+    <option>btp</option><option>industrie</option><option>agroalimentaire</option>
+    <option>santé</option><option>nettoyage</option><option>télécom</option>
+    <option>it</option><option>événementiel</option><option>retail</option>
+    <option>aéroport</option><option>imprimerie</option><option>immobilier</option>
   </select>
   <span class="ct" id="ct"></span>
 </div>
@@ -359,6 +383,10 @@ function renderRows() {
     const plat = j.platform.replace(' ','');
     const tags = Array.isArray(j.tags) ? j.tags : [];
     const tagChips = tags.map(t => `<span class="chip chip-${t}">${t}</span>`).join('');
+    const poste  = j.poste  || '';
+    const domain = j.domain || '';
+    const posteChip  = poste  ? `<span class="chip chip-poste">${escHtml(poste)}</span>`   : '';
+    const domainChip = domain ? `<span class="chip chip-domain">${escHtml(domain)}</span>` : '';
     const pulled = j.pulled_at ? `<div class="pulled">Found ${j.pulled_at}</div>` : '';
     return `<tr class="jr r-${escAttr(st)}"
       data-i="${i}"
@@ -367,6 +395,8 @@ function renderRows() {
       data-location="${escAttr(j.location.toLowerCase())}"
       data-platform="${escAttr(j.platform)}"
       data-tags="${escAttr(tags.join(','))}"
+      data-poste="${escAttr(poste)}"
+      data-domain="${escAttr(domain)}"
       data-status="${escAttr(st)}"
       data-url="${escAttr(j.url)}">
       <td class="tn">${i+1}</td>
@@ -378,7 +408,7 @@ function renderRows() {
       <td class="tl">${escHtml(j.location)}</td>
       <td class="tk">${escHtml(j.contract)}</td>
       <td><span class="plat ${plat}">${escHtml(j.platform)}</span></td>
-      <td style="white-space:nowrap">${tagChips || '<span class="chip chip-Other">Other</span>'}</td>
+      <td style="white-space:nowrap">${posteChip}${domainChip}${tagChips || (!poste && !domain ? '<span class="chip chip-Other">Other</span>' : '')}</td>
       <td><select class="ss ss-${escAttr(st)||'x'}" onchange="update(this,'status')">
         <option value="">To Apply</option>
         ${['Applied','Interview','Offer','Rejected','Ignore'].map(s =>
@@ -433,6 +463,8 @@ function filter() {
   const q    = document.getElementById('q').value.toLowerCase();
   const plat = document.getElementById('fp').value;
   const tag  = document.getElementById('ft').value;
+  const fpo  = document.getElementById('fpo').value;
+  const fdo  = document.getElementById('fdo').value;
   const rows = document.querySelectorAll('.jr');
   let v = 0;
   rows.forEach(r => {
@@ -441,6 +473,8 @@ function filter() {
     const ok  = (!q    || txt.includes(q))
              && (!plat || r.dataset.platform === plat)
              && (!tag  || r.dataset.tags.split(',').includes(tag))
+             && (!fpo  || r.dataset.poste  === fpo)
+             && (!fdo  || r.dataset.domain === fdo)
              && (!activeStatus || rs === activeStatus
                 || (activeStatus==='To Apply' && !r.dataset.status));
     r.classList.toggle('hidden', !ok);

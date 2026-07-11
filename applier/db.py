@@ -42,6 +42,8 @@ def init_db() -> None:
             contract  TEXT NOT NULL DEFAULT '',
             platform  TEXT NOT NULL,
             tags      TEXT NOT NULL DEFAULT '[]',
+            poste     TEXT NOT NULL DEFAULT '',
+            domain    TEXT NOT NULL DEFAULT '',
             pulled_at TEXT NOT NULL DEFAULT ''
         );
         CREATE TABLE IF NOT EXISTS tracking (
@@ -51,25 +53,40 @@ def init_db() -> None:
             notes        TEXT NOT NULL DEFAULT '',
             updated_at   TEXT NOT NULL DEFAULT (datetime('now'))
         );
+        CREATE TABLE IF NOT EXISTS source_log (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            source     TEXT NOT NULL,
+            checked_at TEXT NOT NULL DEFAULT (datetime('now')),
+            jobs_found INTEGER NOT NULL DEFAULT 0,
+            status     TEXT NOT NULL DEFAULT 'ok'
+        );
         """)
+        # Migrate existing DBs that predate poste/domain columns
+        for col in ("poste", "domain"):
+            try:
+                conn.execute(f"ALTER TABLE jobs ADD COLUMN {col} TEXT NOT NULL DEFAULT ''")
+            except sqlite3.OperationalError:
+                pass  # column already exists
 
 
 def upsert_jobs(results: list[JobResult]) -> None:
     with get_conn() as conn:
         conn.executemany(
             """
-            INSERT INTO jobs (url, title, company, location, contract, platform, tags, pulled_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO jobs (url, title, company, location, contract, platform, tags, poste, domain, pulled_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(url) DO UPDATE SET
                 title=excluded.title, company=excluded.company,
                 location=excluded.location, contract=excluded.contract,
                 platform=excluded.platform, tags=excluded.tags,
+                poste=excluded.poste, domain=excluded.domain,
                 pulled_at=excluded.pulled_at
             """,
             [
                 (
                     r.url, r.title, r.company, r.location, r.contract,
-                    r.platform, json.dumps(r.tags, ensure_ascii=False), r.pulled_at,
+                    r.platform, json.dumps(r.tags, ensure_ascii=False),
+                    r.poste, r.domain, r.pulled_at,
                 )
                 for r in results
             ],
@@ -109,19 +126,20 @@ def export_jobs_json(path: Path) -> None:
 
 
 def import_from_json(path: Path) -> int:
-    """Import jobs from a JSON file into the DB. Returns number of new rows inserted."""
+    """Import jobs from a JSON file into the DB. Returns number of rows processed."""
     if not path.exists():
         return 0
     data = json.loads(path.read_text(encoding="utf-8"))
     with get_conn() as conn:
         conn.executemany(
             """
-            INSERT INTO jobs (url, title, company, location, contract, platform, tags, pulled_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO jobs (url, title, company, location, contract, platform, tags, poste, domain, pulled_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(url) DO UPDATE SET
                 title=excluded.title, company=excluded.company,
                 location=excluded.location, contract=excluded.contract,
                 platform=excluded.platform, tags=excluded.tags,
+                poste=excluded.poste, domain=excluded.domain,
                 pulled_at=excluded.pulled_at
             """,
             [
@@ -129,6 +147,7 @@ def import_from_json(path: Path) -> int:
                     r["url"], r["title"], r["company"], r["location"],
                     r.get("contract", ""), r["platform"],
                     json.dumps(r.get("tags", []), ensure_ascii=False),
+                    r.get("poste", ""), r.get("domain", ""),
                     r.get("pulled_at", ""),
                 )
                 for r in data
@@ -154,3 +173,27 @@ def update_tracking(url: str, status: str | None, applied_date: str | None, note
                 "INSERT INTO tracking (url, status, applied_date, notes) VALUES (?,?,?,?)",
                 (url, status or "", applied_date or "", notes or ""),
             )
+
+
+def log_source_check(source: str, jobs_found: int, status: str = "ok") -> None:
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO source_log (source, jobs_found, status) VALUES (?, ?, ?)",
+            (source, jobs_found, status),
+        )
+
+
+def get_coverage() -> list[dict]:
+    """Return per-source summary: last checked, total jobs found, check count."""
+    with get_conn() as conn:
+        rows = conn.execute("""
+            SELECT source,
+                   MAX(checked_at) AS last_checked,
+                   SUM(jobs_found) AS total_found,
+                   COUNT(*)        AS checks,
+                   MAX(status)     AS last_status
+            FROM source_log
+            GROUP BY source
+            ORDER BY last_checked DESC
+        """).fetchall()
+    return [dict(r) for r in rows]

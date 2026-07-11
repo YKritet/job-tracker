@@ -81,3 +81,10 @@ label = "UK"
 country = "GB"
 linkedin_geo = 101165590
 ft_location = ""
+
+[filter]
+# Hamza's profile is IT/hardware — no broad exclusions needed.
+# Add terms here to silently drop irrelevant jobs from search results.
+exclude_keywords = []
+postes = ["it support", "ingénieur", "gestion", "technicien"]
+domains = ["it", "retail", "grande distribution", "aéroport"]

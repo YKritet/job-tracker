@@ -1,0 +1,78 @@
+[candidate]
+name = "Hamza Kritet"
+email = "Hamzakritet02@gmail.com"
+phone = "06 23 65 57 98"
+base_location = "Arcueil, France"
+languages = ["fr", "en", "ar"]
+
+[aspirations]
+summary = """
+Digital marketing and communication roles — SEO, social media management,
+community management, content creation, digital campaigns, CRM, growth marketing.
+NOT looking for finance, accounting, or audit roles.
+"""
+preferred_contract = "CDI"
+open_to_cdd = true
+
+[search]
+roles_fr = [
+    "chargé de marketing digital",
+    "community manager",
+    "chargé de communication digitale",
+    "traffic manager",
+    "responsable SEO",
+    "chargé d'acquisition",
+    "responsable réseaux sociaux",
+    "chargé de contenu digital",
+    "growth marketer",
+    "chargé de CRM",
+]
+roles_en = [
+    "digital marketing manager",
+    "social media manager",
+    "SEO specialist",
+    "content marketing manager",
+    "growth hacker",
+    "digital campaign manager",
+]
+
+[[search.locations]]
+label = "France"
+country = "FR"
+linkedin_geo = 105015875
+ft_location = ""
+
+[[search.locations]]
+label = "Paris"
+country = "FR"
+linkedin_geo = 104246759
+ft_location = "Paris (75)"
+
+[[search.locations]]
+label = "Île-de-France"
+country = "FR"
+linkedin_geo = 104246759
+ft_location = "Île-de-France"
+
+[filter]
+# Jobs whose title contains any of these keywords are silently dropped.
+# "gestion" is intentionally NOT listed — management/gestion roles are welcome.
+exclude_keywords = [
+    "comptabilité",
+    "comptable",
+    "finance",
+    "financier",
+    "financière",
+    "fiscalité",
+    "fiscal",
+    "audit",
+    "auditeur",
+    "trésorerie",
+    "trésorier",
+    "bilan",
+    "consolidation",
+    "contrôle de gestion",
+    "controller",
+]
+postes = ["marketer", "gestion", "vendeur"]
+domains = ["retail", "événementiel", "it", "grande distribution"]

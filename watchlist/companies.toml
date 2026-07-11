@@ -1,0 +1,502 @@
+# Company career-page watchlist
+# Each [[company]] entry is checked by `applier coverage --watchlist`
+# Add any company here; sector is for display/filtering only.
+
+# ── Transport & Livraison ─────────────────────────────────────────────────
+[[company]]
+name = "RATP"
+sector = "transport"
+careers_url = "https://www.ratp.fr/offres-emploi"
+
+[[company]]
+name = "SNCF"
+sector = "transport"
+careers_url = "https://www.sncf.com/fr/groupe/emploi-et-alternance"
+
+[[company]]
+name = "La Poste"
+sector = "transport"
+careers_url = "https://www.laposte.fr/mediatheque-groupe/recrutement"
+
+[[company]]
+name = "DHL France"
+sector = "transport"
+careers_url = "https://careers.dhl.com"
+
+[[company]]
+name = "FedEx France"
+sector = "transport"
+careers_url = "https://jobs.fedex.com"
+
+[[company]]
+name = "Chronopost"
+sector = "transport"
+careers_url = "https://www.chronopost.fr/fr/carrieres"
+
+[[company]]
+name = "Stuart"
+sector = "transport"
+careers_url = "https://stuart.com/careers"
+
+[[company]]
+name = "Amazon Logistics FR"
+sector = "transport"
+careers_url = "https://www.amazon.jobs/fr/location/france"
+
+[[company]]
+name = "Getir France"
+sector = "transport"
+careers_url = "https://getir.com/careers"
+
+# ── Aéroport ─────────────────────────────────────────────────────────────
+[[company]]
+name = "Swissport France"
+sector = "aéroport"
+careers_url = "https://www.swissport.com/careers"
+
+[[company]]
+name = "Air France"
+sector = "aéroport"
+careers_url = "https://careers.airfranceklm.com"
+
+[[company]]
+name = "Dnata"
+sector = "aéroport"
+careers_url = "https://www.dnata.com/en/careers"
+
+[[company]]
+name = "Geodis"
+sector = "aéroport"
+careers_url = "https://fr.geodis.com/fr/nos-offres-d-emploi"
+
+[[company]]
+name = "ID Logistics"
+sector = "aéroport"
+careers_url = "https://www.id-logistics.com/fr/offres-emplois"
+
+# ── Logistique IDF ────────────────────────────────────────────────────────
+[[company]]
+name = "Kuehne+Nagel"
+sector = "logistique"
+careers_url = "https://jobs.kuehne-nagel.com"
+
+[[company]]
+name = "DB Schenker France"
+sector = "logistique"
+careers_url = "https://www.dbschenker.com/fr-fr/a-propos/carrieres"
+
+[[company]]
+name = "STEF"
+sector = "logistique"
+careers_url = "https://www.stef.com/fr/rejoindre-stef"
+
+[[company]]
+name = "Dachser France"
+sector = "logistique"
+careers_url = "https://www.dachser.com/fr/fr/carrieres"
+
+[[company]]
+name = "FM Logistic"
+sector = "logistique"
+careers_url = "https://www.fm-logistic.com/fr/nous-rejoindre"
+
+[[company]]
+name = "Ceva Logistics"
+sector = "logistique"
+careers_url = "https://www.cevalogistics.com/en/careers"
+
+[[company]]
+name = "Rhenus Logistics"
+sector = "logistique"
+careers_url = "https://www.rhenus.com/en/careers"
+
+[[company]]
+name = "Gefco"
+sector = "logistique"
+careers_url = "https://www.gefco.net/fr/carrieres"
+
+[[company]]
+name = "Arvato France"
+sector = "logistique"
+careers_url = "https://www.arvato.com/fr-fr/carrieres.html"
+
+[[company]]
+name = "Easydis"
+sector = "logistique"
+careers_url = "https://www.easydis.com/offres-emploi"
+
+[[company]]
+name = "Fiege France"
+sector = "logistique"
+careers_url = "https://www.fiege.com/karriere"
+
+# ── Grande Distribution ───────────────────────────────────────────────────
+[[company]]
+name = "Carrefour"
+sector = "grande distribution"
+careers_url = "https://www.carrefour.com/fr/group/careers"
+
+[[company]]
+name = "E.Leclerc"
+sector = "grande distribution"
+careers_url = "https://recrutement.e.leclerc"
+
+[[company]]
+name = "Intermarché"
+sector = "grande distribution"
+careers_url = "https://recrutement.mousquetaires.com"
+
+[[company]]
+name = "Système U"
+sector = "grande distribution"
+careers_url = "https://www.systeme-u.fr/groupe/emploi"
+
+[[company]]
+name = "Auchan"
+sector = "grande distribution"
+careers_url = "https://emploi.auchan.fr"
+
+[[company]]
+name = "Casino Groupe"
+sector = "grande distribution"
+careers_url = "https://careers.groupe-casino.fr"
+
+[[company]]
+name = "Lidl France"
+sector = "grande distribution"
+careers_url = "https://recrutement.lidl.fr"
+
+[[company]]
+name = "Aldi France"
+sector = "grande distribution"
+careers_url = "https://recrutement.aldi.fr"
+
+[[company]]
+name = "Brico Dépôt"
+sector = "grande distribution"
+careers_url = "https://recrutement.bricodepot.fr"
+
+[[company]]
+name = "Castorama"
+sector = "grande distribution"
+careers_url = "https://emploi.castorama.fr"
+
+[[company]]
+name = "Stokomani"
+sector = "grande distribution"
+careers_url = "https://www.stokomani.fr/emploi"
+
+[[company]]
+name = "Noz"
+sector = "grande distribution"
+careers_url = "https://www.noz.fr/offres-emploi"
+
+# ── Retail / Tech ─────────────────────────────────────────────────────────
+[[company]]
+name = "Cdiscount"
+sector = "retail"
+careers_url = "https://www.cdiscount.com/recrutement"
+
+[[company]]
+name = "FNAC Darty"
+sector = "retail"
+careers_url = "https://carrieres.fnacdarty.com"
+
+[[company]]
+name = "Leroy Merlin"
+sector = "retail"
+careers_url = "https://careers.leroymerlin.fr"
+
+# ── Data / IT ─────────────────────────────────────────────────────────────
+[[company]]
+name = "Equinix France"
+sector = "it"
+careers_url = "https://careers.equinix.com"
+
+[[company]]
+name = "OVHcloud"
+sector = "it"
+careers_url = "https://www.ovhcloud.com/fr/jobs"
+
+[[company]]
+name = "Ikoula"
+sector = "it"
+careers_url = "https://www.ikoula.com/fr/jobs"
+
+# ── Événementiel / Hospitality ────────────────────────────────────────────
+[[company]]
+name = "Accor"
+sector = "événementiel"
+careers_url = "https://careers.accor.com"
+
+[[company]]
+name = "GL Events"
+sector = "événementiel"
+careers_url = "https://www.gl-events.com/fr/rejoindre-gl-events"
+
+[[company]]
+name = "Sodexo France"
+sector = "événementiel"
+careers_url = "https://fr.sodexo.com/home/decouvrir-sodexo/rejoindre-sodexo.html"
+
+[[company]]
+name = "Compass Group France"
+sector = "événementiel"
+careers_url = "https://www.compass-group.fr/recrutement"
+
+[[company]]
+name = "Semmaris"
+sector = "événementiel"
+careers_url = "https://www.semmaris.fr/rungis/emploi"
+
+# ── Industrie IDF ─────────────────────────────────────────────────────────
+[[company]]
+name = "Stellantis"
+sector = "industrie"
+careers_url = "https://www.stellantis.com/fr/carrieres"
+
+[[company]]
+name = "Renault Group"
+sector = "industrie"
+careers_url = "https://www.renaultgroup.com/carrieres"
+
+[[company]]
+name = "Air Liquide"
+sector = "industrie"
+careers_url = "https://careers.airliquide.com"
+
+[[company]]
+name = "Sanofi"
+sector = "industrie"
+careers_url = "https://www.sanofi.com/fr/notre-science/la-science-en-action/rejoignez-nos-equipes"
+
+[[company]]
+name = "L'Oréal"
+sector = "industrie"
+careers_url = "https://careers.loreal.com/fr_FR"
+
+[[company]]
+name = "Thales"
+sector = "industrie"
+careers_url = "https://www.thalesgroup.com/fr/carrieres"
+
+[[company]]
+name = "Safran"
+sector = "industrie"
+careers_url = "https://www.safran-group.com/fr/carrieres"
+
+[[company]]
+name = "Dassault Systèmes"
+sector = "industrie"
+careers_url = "https://www.3ds.com/fr/carrieres"
+
+[[company]]
+name = "Valeo"
+sector = "industrie"
+careers_url = "https://www.valeo.com/fr/carrieres"
+
+[[company]]
+name = "Faurecia"
+sector = "industrie"
+careers_url = "https://www.faurecia.com/fr/carrieres"
+
+[[company]]
+name = "Essilor"
+sector = "industrie"
+careers_url = "https://www.essilorluxottica.com/careers"
+
+# ── Agroalimentaire ───────────────────────────────────────────────────────
+[[company]]
+name = "Brioche Pasquier"
+sector = "agroalimentaire"
+careers_url = "https://www.briochepasquier.com/nous-rejoindre"
+
+[[company]]
+name = "Délifrance"
+sector = "agroalimentaire"
+careers_url = "https://www.delifrance.com/fr/delifrance/rejoindre-delifrance"
+
+[[company]]
+name = "Bonduelle"
+sector = "agroalimentaire"
+careers_url = "https://www.bonduelle.com/fr/rejoindre-bonduelle"
+
+[[company]]
+name = "Lactalis"
+sector = "agroalimentaire"
+careers_url = "https://www.lactalis.fr/rejoignez-nous"
+
+[[company]]
+name = "Bel Groupe"
+sector = "agroalimentaire"
+careers_url = "https://www.groupe-bel.com/fr/carrieres"
+
+[[company]]
+name = "Fleury Michon"
+sector = "agroalimentaire"
+careers_url = "https://www.fleurymichon.fr/groupe/rejoindre-fleury-michon"
+
+[[company]]
+name = "Soufflet"
+sector = "agroalimentaire"
+careers_url = "https://www.soufflet.com/fr/carrieres"
+
+[[company]]
+name = "Pomona"
+sector = "agroalimentaire"
+careers_url = "https://www.pomona.fr/carrieres"
+
+# ── BTP & Maintenance ─────────────────────────────────────────────────────
+[[company]]
+name = "Bouygues Construction"
+sector = "btp"
+careers_url = "https://careers.bouygues-construction.com"
+
+[[company]]
+name = "Eiffage"
+sector = "btp"
+careers_url = "https://www.eiffage.com/fr/carrieres.html"
+
+[[company]]
+name = "Vinci"
+sector = "btp"
+careers_url = "https://careers.vinci.com"
+
+[[company]]
+name = "Spie"
+sector = "btp"
+careers_url = "https://www.spie.com/fr/carrieres"
+
+[[company]]
+name = "Engie Services"
+sector = "btp"
+careers_url = "https://jobs.engie.com"
+
+[[company]]
+name = "Dalkia"
+sector = "btp"
+careers_url = "https://www.dalkia.fr/carrieres"
+
+[[company]]
+name = "ISS France"
+sector = "btp"
+careers_url = "https://fr.issworld.com/fr-fr/carrieres"
+
+[[company]]
+name = "Onet"
+sector = "btp"
+careers_url = "https://recrutement.onet.fr"
+
+[[company]]
+name = "Derichebourg"
+sector = "btp"
+careers_url = "https://www.derichebourg.com/fr/carrieres"
+
+[[company]]
+name = "Samsic"
+sector = "btp"
+careers_url = "https://www.samsic.fr/carrieres"
+
+# ── Télécom Terrain ───────────────────────────────────────────────────────
+[[company]]
+name = "Circet France"
+sector = "télécom"
+careers_url = "https://www.circet.fr/recrutement"
+
+[[company]]
+name = "Axians France"
+sector = "télécom"
+careers_url = "https://fr.axians.com/carrieres"
+
+[[company]]
+name = "Sogetrel"
+sector = "télécom"
+careers_url = "https://www.sogetrel.fr/rejoindre-sogetrel"
+
+[[company]]
+name = "Covage"
+sector = "télécom"
+careers_url = "https://www.covage.com/rejoindre-covage"
+
+# ── Santé / Pharma ────────────────────────────────────────────────────────
+[[company]]
+name = "CERP"
+sector = "santé"
+careers_url = "https://www.cerp.fr/rejoindre-cerp"
+
+[[company]]
+name = "OCP / McKesson France"
+sector = "santé"
+careers_url = "https://www.ocp.fr/ocp/carrieres"
+
+[[company]]
+name = "Alliance Healthcare"
+sector = "santé"
+careers_url = "https://www.alliance-healthcare.fr/carrieres"
+
+[[company]]
+name = "Servier"
+sector = "santé"
+careers_url = "https://careers.servier.com"
+
+[[company]]
+name = "Téva France"
+sector = "santé"
+careers_url = "https://www.teva.fr/carrieres"
+
+# ── Nettoyage / Facility ──────────────────────────────────────────────────
+[[company]]
+name = "Atalian"
+sector = "nettoyage"
+careers_url = "https://www.atalian.com/fr-FR/carrieres"
+
+[[company]]
+name = "Elior"
+sector = "nettoyage"
+careers_url = "https://www.elior.com/fr/carrieres"
+
+[[company]]
+name = "GSF"
+sector = "nettoyage"
+careers_url = "https://www.gsf.fr/recrutement"
+
+[[company]]
+name = "Initial / Rentokil"
+sector = "nettoyage"
+careers_url = "https://www.rentokil-initial.com/fr/carrieres"
+
+[[company]]
+name = "Derichebourg Multiservices"
+sector = "nettoyage"
+careers_url = "https://www.derichebourg.com/fr/carrieres"
+
+# ── Intérim / Staffing (watchlist for Hamza's interim search) ────────────
+[[company]]
+name = "Adecco France"
+sector = "interim"
+careers_url = "https://www.adecco.fr/trouver-un-emploi"
+
+[[company]]
+name = "Manpower France"
+sector = "interim"
+careers_url = "https://www.manpower.fr/offres-emploi"
+
+[[company]]
+name = "Randstad France"
+sector = "interim"
+careers_url = "https://www.randstad.fr/offres-emploi"
+
+[[company]]
+name = "Synergie"
+sector = "interim"
+careers_url = "https://www.synergie.fr/offres-emploi"
+
+[[company]]
+name = "Hays France"
+sector = "interim"
+careers_url = "https://www.hays.fr/offres-d-emploi"
+
+[[company]]
+name = "PageGroup France"
+sector = "interim"
+careers_url = "https://www.pagegroup.fr/offres-emploi"
