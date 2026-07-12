@@ -1,88 +1,139 @@
-"""Indeed France scraper — parses the public RSS feed (no JS required)."""
+"""Indeed France — Playwright-based scraper (bypasses RSS/bot blocks)."""
 from __future__ import annotations
+from urllib.parse import quote_plus
 
-import xml.etree.ElementTree as ET
-from urllib.parse import urlencode
-
-import httpx
+from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
 from .base import BaseSearcher, JobResult
 
-_RSS_URL = "https://fr.indeed.com/rss"
-_HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) "
-        "Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
-}
-
-# Indeed RSS namespaces
-_NS = {"indeed": "https://www.indeed.com/about/rss"}
+_BASE = "https://fr.indeed.com"
 
 
 class IndeedFRSearcher(BaseSearcher):
     def search(self, keywords: str, location: str, count: int = 25) -> list[JobResult]:
-        params = {
-            "q": keywords,
-            "l": location,
-            "radius": "50",
-            "limit": str(min(count, 25)),
-            "lang": "fr",
-        }
-        try:
-            resp = httpx.get(
-                f"{_RSS_URL}?{urlencode(params)}",
-                headers=_HEADERS,
-                timeout=20,
-                follow_redirects=True,
-            )
-            resp.raise_for_status()
-        except httpx.HTTPStatusError as e:
-            raise RuntimeError(f"Indeed FR HTTP {e.response.status_code}") from e
-        except httpx.RequestError as e:
-            raise RuntimeError(f"Indeed FR request failed: {e}") from e
-
-        return _parse_rss(resp.text, location)
+        return _pw_search(keywords, location, count)
 
 
-def _parse_rss(xml_text: str, fallback_location: str) -> list[JobResult]:
-    try:
-        root = ET.fromstring(xml_text)
-    except ET.ParseError as e:
-        raise RuntimeError(f"Indeed FR RSS parse error: {e}") from e
-
+def _pw_search(keywords: str, location: str, count: int) -> list[JobResult]:
+    url = (
+        f"{_BASE}/emplois"
+        f"?q={quote_plus(keywords)}"
+        f"&l={quote_plus(location)}"
+        f"&radius=50"
+    )
     results: list[JobResult] = []
-    for item in root.findall(".//item"):
-        title = (item.findtext("title") or "").strip()
-        url   = (item.findtext("link")  or "").strip()
-        if not title or not url:
-            continue
 
-        # Company: Indeed puts it in <source> or in the description
-        company = (item.findtext("source") or "").strip()
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-blink-features=AutomationControlled"],
+            )
+            ctx = browser.new_context(
+                locale="fr-FR",
+                user_agent=(
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/124.0.0.0 Safari/537.36"
+                ),
+                viewport={"width": 1280, "height": 900},
+            )
+            page = ctx.new_page()
+            page.goto(url, timeout=30_000, wait_until="domcontentloaded")
 
-        # Location: Indeed sometimes provides it in the description text
-        location = fallback_location
+            # dismiss cookie consent if present
+            for sel in [
+                'button[id*="onetrust-accept"]',
+                'button[id*="cookie-accept"]',
+                'button[aria-label*="cookie"]',
+                '#onetrust-accept-btn-handler',
+            ]:
+                try:
+                    page.click(sel, timeout=2_000)
+                    break
+                except PWTimeout:
+                    pass
 
-        # Contract type from description text (best-effort)
-        desc = (item.findtext("description") or "").lower()
-        contract = ""
-        for kw, label in [("cdi", "CDI"), ("cdd", "CDD"), ("freelance", "Freelance"),
-                           ("intérim", "Intérim"), ("stage", "Stage"),
-                           ("alternance", "Alternance")]:
-            if kw in desc:
-                contract = label
-                break
+            try:
+                page.wait_for_selector('[data-jk], .job_seen_beacon', timeout=15_000)
+            except PWTimeout:
+                browser.close()
+                return []
 
-        results.append(JobResult(
-            title=title,
-            company=company,
-            location=location,
-            url=url,
-            platform="Indeed",
-            contract=contract,
-        ))
+            cards = (
+                page.query_selector_all('[data-jk]')
+                or page.query_selector_all('.job_seen_beacon')
+            )
+
+            for card in cards[:count]:
+                jk = card.get_attribute('data-jk') or ""
+
+                title_el = (
+                    card.query_selector('h2.jobTitle span[title]')
+                    or card.query_selector('h2.jobTitle span')
+                    or card.query_selector('[data-testid="jobTitle"] span')
+                    or card.query_selector('h2 a span')
+                )
+                company_el = (
+                    card.query_selector('[data-testid="company-name"]')
+                    or card.query_selector('.companyName')
+                    or card.query_selector('[class*="companyName"]')
+                )
+                loc_el = (
+                    card.query_selector('[data-testid="text-location"]')
+                    or card.query_selector('.companyLocation')
+                    or card.query_selector('[class*="companyLocation"]')
+                )
+                meta_el = (
+                    card.query_selector('[data-testid="attribute_snippet_testid"]')
+                    or card.query_selector('.salary-snippet-container')
+                    or card.query_selector('.attribute_snippet')
+                    or card.query_selector('[class*="metadata"]')
+                )
+
+                if not title_el:
+                    continue
+                title = title_el.inner_text().strip()
+                if not title:
+                    continue
+
+                if jk:
+                    job_url = f"{_BASE}/viewjob?jk={jk}"
+                else:
+                    link = (
+                        card.query_selector('h2 a')
+                        or card.query_selector('a[href*="viewjob"]')
+                    )
+                    href = link.get_attribute('href') if link else ""
+                    job_url = href if href.startswith('http') else f"{_BASE}{href}" if href else ""
+
+                if not job_url:
+                    continue
+
+                meta_text = meta_el.inner_text().strip() if meta_el else ""
+                contract = ""
+                for kw, label in [
+                    ("cdi", "CDI"), ("cdd", "CDD"), ("intérim", "Intérim"),
+                    ("stage", "Stage"), ("alternance", "Alternance"),
+                    ("temps plein", "Temps plein"), ("temps partiel", "Temps partiel"),
+                ]:
+                    if kw in meta_text.lower():
+                        contract = label
+                        break
+                if not contract and meta_text:
+                    contract = meta_text[:60]
+
+                results.append(JobResult(
+                    title=title,
+                    company=company_el.inner_text().strip() if company_el else "",
+                    location=loc_el.inner_text().strip() if loc_el else location,
+                    url=job_url,
+                    platform="Indeed",
+                    contract=contract,
+                ))
+
+            browser.close()
+    except Exception:
+        pass
 
     return results

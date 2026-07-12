@@ -1,0 +1,117 @@
+[candidate]
+name = "Hamza Kritet"
+email = "Hamzakritet02@gmail.com"
+phone = "06 23 65 57 98"
+base_location = "Île-de-France, France"
+languages = ["fr", "en", "ar"]
+
+[search]
+# Full Excalidraw job-search matrix — all postes × all domains
+# One query per poste so each keyword hits the platform search index
+roles_fr = [
+    # Livreur / livraison
+    "livreur",
+    "chauffeur livreur",
+    "coursier",
+    # Conducteur PL/SPL
+    "conducteur poids lourd",
+    "chauffeur SPL",
+    "conducteur routier",
+    # Ouvrier / production
+    "ouvrier",
+    "manutentionnaire",
+    "agent de production",
+    "agent de conditionnement",
+    # Stockiste / entrepôt
+    "préparateur de commandes",
+    "cariste",
+    "magasinier",
+    "stockiste",
+    # Vendeur / commerce
+    "vendeur",
+    "conseiller de vente",
+    "hôte de caisse",
+    # IT support / technicien IT
+    "technicien informatique",
+    "support IT",
+    "helpdesk",
+    "technicien de maintenance informatique",
+    # Marketer / communication
+    "community manager",
+    "chargé de marketing digital",
+    "traffic manager",
+    "social media manager",
+    # Gestion / administration
+    "gestionnaire",
+    "assistant de direction",
+    "office manager",
+    "chargé d'administration",
+    # Ingénieur
+    "ingénieur logistique",
+    "ingénieur production",
+    "ingénieur maintenance",
+    # Facteur / courrier
+    "facteur",
+    "agent de tri courrier",
+    "agent courrier",
+    # Technicien terrain / installateur
+    "technicien installateur",
+    "technicien terrain",
+    "technicien de maintenance",
+    # Opérateur / quai / sécurité
+    "opérateur logistique",
+    "agent de quai",
+    "agent de sécurité",
+    "agent d'exploitation",
+    # Serrurier / BTP trades
+    "serrurier",
+    "électricien bâtiment",
+    "plombier",
+    "menuisier",
+    "chauffagiste",
+    # Testeur / qualité
+    "contrôleur qualité",
+    "testeur qualité",
+    "agent qualité",
+    # Aéroport spécifiques
+    "agent aéroportuaire",
+    "agent de piste",
+    "bagagiste",
+    # Intérim / secteur
+    "préparateur logistique",
+    "opérateur de saisie",
+]
+
+roles_en = [
+    "delivery driver",
+    "warehouse operator",
+    "forklift operator",
+    "picker packer",
+    "quality control",
+]
+
+[[search.locations]]
+label = "Île-de-France"
+country = "FR"
+linkedin_geo = 104246759
+ft_location = "Île-de-France"
+
+[[search.locations]]
+label = "France"
+country = "FR"
+linkedin_geo = 105015875
+ft_location = ""
+
+[filter]
+# All postes from the Excalidraw diagram — no filtering, show all
+exclude_keywords = []
+postes = [
+    "livreur", "conducteur", "ouvrier", "stockiste", "vendeur",
+    "it support", "marketer", "gestion", "ingénieur", "facteur",
+    "technicien", "opérateur", "serrurier", "testeur"
+]
+domains = [
+    "logistique", "transport", "grande distribution", "btp", "industrie",
+    "agroalimentaire", "santé", "nettoyage", "télécom", "it",
+    "événementiel", "retail", "aéroport", "imprimerie", "immobilier"
+]

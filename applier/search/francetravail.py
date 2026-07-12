@@ -1,77 +1,147 @@
-import httpx
-from bs4 import BeautifulSoup
+"""France Travail — Playwright-based scraper (Angular SPA)."""
+from __future__ import annotations
+from urllib.parse import quote_plus
+
+from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
+
 from .base import BaseSearcher, JobResult
 
-BASE = "https://candidat.francetravail.fr"
-SEARCH_URL = f"{BASE}/offres/recherche"
+_BASE = "https://candidat.francetravail.fr"
 
-HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-    ),
-    "Accept-Language": "fr-FR,fr;q=0.9",
-    "Accept": "text/html,application/xhtml+xml",
-}
+_CARD_SELECTORS = [
+    '[data-id-offre]',
+    'li.result',
+    'article[data-id]',
+    '.c-card-job',
+    '.result-item',
+    'app-result-item',
+    '.offre-result',
+]
 
 
 class FranceTravailSearcher(BaseSearcher):
-    """France Travail (ex Pôle Emploi) job search via website scraping."""
-
     def search(self, keywords: str, location: str = "France", count: int = 50) -> list[JobResult]:
-        results: list[JobResult] = []
-        params = {
-            "motsCles": keywords,
-            "offresPartenaires": "true",
-            "tri": "0",
-        }
-        if location and location.lower() not in ("france", "fr"):
-            params["lieuTravail"] = location
+        return _pw_search(keywords, location, count)
 
-        with httpx.Client(timeout=20, follow_redirects=True) as client:
-            r = client.get(SEARCH_URL, params=params, headers=HEADERS)
-            if r.status_code != 200:
-                return results
 
-            soup = BeautifulSoup(r.text, "lxml")
-            for card in soup.select("li.result"):
-                offre_id = card.get("data-id-offre", "")
-                if not offre_id:
+def _pw_search(keywords: str, location: str, count: int) -> list[JobResult]:
+    loc_param = (
+        f"&lieuTravail={quote_plus(location)}"
+        if location and location.lower() not in ("france", "fr", "")
+        else ""
+    )
+    url = (
+        f"{_BASE}/offres/recherche"
+        f"?motsCles={quote_plus(keywords)}"
+        f"&offresPartenaires=true&tri=0{loc_param}"
+    )
+    results: list[JobResult] = []
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
+            ctx = browser.new_context(
+                locale="fr-FR",
+                user_agent=(
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/124.0.0.0 Safari/537.36"
+                ),
+            )
+            page = ctx.new_page()
+            page.goto(url, timeout=30_000, wait_until="networkidle")
+
+            # dismiss cookie consent
+            for sel in [
+                '#pecCookieButton',
+                'button[data-action*="cookie"]',
+                'button[aria-label*="accepter"]',
+                'button[id*="accept"]',
+                '.pec-cookie__btn',
+            ]:
+                try:
+                    page.click(sel, timeout=2_000)
+                    break
+                except PWTimeout:
+                    pass
+
+            # wait for Angular to render job cards
+            loaded = False
+            for sel in _CARD_SELECTORS:
+                try:
+                    page.wait_for_selector(sel, timeout=12_000)
+                    loaded = True
+                    break
+                except PWTimeout:
                     continue
 
-                title_el = card.select_one(".media-heading-title")
-                subtext_el = card.select_one("p.subtext")
-                contract_el = card.select_one("p.contrat")
+            if not loaded:
+                browser.close()
+                return []
 
-                company = ""
-                loc = ""
-                if subtext_el:
-                    span = subtext_el.find("span")
-                    if span:
-                        loc = span.get_text(strip=True)
-                        span.extract()
-                    raw = subtext_el.get_text(separator=" ")
-                    company = " ".join(w for w in raw.split() if w != "-")
-
-                contract = ""
-                if contract_el:
-                    parts = []
-                    for t in contract_el.get_text(separator="\n").splitlines():
-                        t = t.strip().lstrip("- ").strip()
-                        if t:
-                            parts.append(t)
-                    contract = " · ".join(parts)
-
-                results.append(JobResult(
-                    title=(title_el.get_text(strip=True) if title_el else ""),
-                    company=company,
-                    location=loc or location,
-                    url=f"{BASE}/offres/recherche/detail/{offre_id}",
-                    platform="France Travail",
-                    contract=contract,
-                ))
-
-                if len(results) >= count:
+            cards = []
+            for sel in _CARD_SELECTORS:
+                cards = page.query_selector_all(sel)
+                if cards:
                     break
 
-        return results
+            for card in cards[:count]:
+                offre_id = card.get_attribute('data-id-offre') or ""
+
+                title_el = (
+                    card.query_selector('.media-heading-title')
+                    or card.query_selector('h2 a')
+                    or card.query_selector('h3 a')
+                    or card.query_selector('[class*="title"] a')
+                    or card.query_selector('a[data-label="offre"]')
+                )
+                company_el = (
+                    card.query_selector('.subtext .subtext-company')
+                    or card.query_selector('[class*="company"]')
+                    or card.query_selector('[class*="entreprise"]')
+                )
+                loc_el = (
+                    card.query_selector('.subtext .location')
+                    or card.query_selector('[class*="location"]')
+                    or card.query_selector('[class*="lieu"]')
+                )
+                contract_el = (
+                    card.query_selector('.contrat')
+                    or card.query_selector('[class*="contract"]')
+                    or card.query_selector('[class*="typeContrat"]')
+                )
+
+                if not title_el:
+                    continue
+                title = title_el.inner_text().strip()
+                if not title:
+                    continue
+
+                if offre_id:
+                    job_url = f"{_BASE}/offres/recherche/detail/{offre_id}"
+                else:
+                    link = (
+                        card.query_selector('a[href*="detail"]')
+                        or card.query_selector('a[href*="offres"]')
+                        or card.query_selector('a[href]')
+                    )
+                    if link:
+                        href = link.get_attribute('href') or ""
+                        job_url = href if href.startswith('http') else f"{_BASE}{href}"
+                    else:
+                        continue
+
+                results.append(JobResult(
+                    title=title,
+                    company=company_el.inner_text().strip() if company_el else "",
+                    location=loc_el.inner_text().strip() if loc_el else location,
+                    url=job_url,
+                    platform="France Travail",
+                    contract=contract_el.inner_text().strip() if contract_el else "",
+                ))
+
+            browser.close()
+    except Exception:
+        pass
+
+    return results

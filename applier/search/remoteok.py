@@ -2,6 +2,18 @@ import html
 import httpx
 from .base import BaseSearcher, JobResult
 
+
+def _fix_location(loc: str) -> str:
+    """Fix mojibake (UTF-8 bytes read as Latin-1) in location strings."""
+    if not loc:
+        return "Remote"
+    if all(ord(c) < 128 for c in loc):
+        return loc
+    try:
+        return loc.encode("latin-1").decode("utf-8")
+    except (UnicodeEncodeError, UnicodeDecodeError):
+        return "Remote"
+
 API_URL = "https://remoteok.com/api"
 
 HEADERS = {
@@ -39,7 +51,7 @@ class RemoteOKSearcher(BaseSearcher):
                 results.append(JobResult(
                     title=html.unescape(job.get("position", "")),
                     company=html.unescape(job.get("company", "")),
-                    location=html.unescape(job.get("location") or "Remote"),
+                    location=_fix_location(html.unescape(job.get("location") or "")),
                     url=url,
                     platform="RemoteOK",
                     contract="Remote",

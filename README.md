@@ -1,16 +1,19 @@
-# Job Tracker
+# Applier — Job Search CLI & Tracker
 
-A tool that searches for jobs across LinkedIn, France Travail and RemoteOK, and lets you track your applications in a simple web interface.
+Automated job search across 19 French platforms (LinkedIn, France Travail, Indeed FR, WTTJ, HelloWork, APEC, RemoteOK, Keljob, AeroEmploi, Adecco, Manpower, Randstad, Synergie, Hays, Michael Page, Cadremploi, Malt, JobEtudiant, Side). Filters results by poste and domain, tracks applications in a local SQLite database, and monitors 100+ company career pages for changes.
 
 ---
 
 ## What it does
 
-- Searches multiple job platforms automatically
-- Filters out **alternance/apprentissage** offers (CDI/CDD only)
-- Tags each job (IT, Sales, Finance, Marketing…)
-- Shows everything in a dark web interface you open in your browser
-- Saves your tracking (status, notes, applied date) to a local database — nothing is ever lost
+- Searches 19 platforms automatically (Tier 1: API/RSS · Tier 2: HTML)
+- Filters out **alternance/apprentissage** offers by default (CDI/CDD only)
+- Applies **profile-level exclusions** — e.g. digital marketing profile drops finance/comptabilité
+- **Auto-tags** each job: category label (IT, Sales, Marketing…) + **Poste** + **Domain**
+- Shows everything in a dark web UI with Poste, Domain, and Platform filter dropdowns
+- Saves tracking (status, notes, applied date) to local SQLite — nothing is lost
+- **Watchlist check** — monitors 100+ company career pages for content changes
+- **GitHub Action** — runs daily at 08:00 UTC, commits `results/jobs.json`, sends Telegram alert
 
 ---
 
@@ -18,148 +21,152 @@ A tool that searches for jobs across LinkedIn, France Travail and RemoteOK, and 
 
 ### First time setup
 
-You need Python 3.11 or later. Check by opening a terminal and typing:
-```
-python --version
-```
+Requires Python 3.11+. Use `uv` (recommended) or `pip`.
 
-**1. Get the code**
 ```bash
 git clone https://github.com/YKritet/job-tracker.git
 cd job-tracker
-```
 
-**2. Create a virtual environment and install**
-```bash
-python -m venv .venv
-source .venv/bin/activate        # on Mac/Linux
-# or on Windows: .venv\Scripts\activate
+# With uv (recommended)
+uv sync
+uv run applier serve
 
+# Or with pip
+python -m venv .venv && source .venv/bin/activate
 pip install -e .
-```
-
-**3. Start the tracker**
-```bash
 applier serve
 ```
 
-Your browser will open automatically at `http://localhost:5050`. The tracker loads the latest job data automatically.
+Your browser opens at `http://localhost:5050`.
 
-> **That's it.** No account needed, no API keys, no configuration.
+> **No API keys required for most platforms.** France Travail and RemoteOK work without any tokens.
 
 ---
 
-### Every time new jobs are added
-
-When Youssef runs a new search and pushes updated data:
+### After Youssef pushes new results
 
 ```bash
 git pull
-applier serve
+applier serve     # then click Refresh in the browser
 ```
 
-Then click **Refresh** in the browser — new jobs appear, your existing tracking (status, notes, dates) is preserved.
+Your tracking (status, notes, dates) is preserved across updates.
 
 ---
 
-### Tracking your applications
-
-In the web interface you can:
+### Tracking applications
 
 | Column | What to do |
 |---|---|
 | **Status** | Set to *Applied*, *Interview*, *Offer*, *Rejected*, or *Ignore* |
 | **Applied date** | Pick the date you sent your CV |
-| **Notes** | Free text — contact name, salary, anything useful |
+| **Notes** | Contact name, salary, anything useful |
 
-Everything saves automatically the moment you change it. You can close the browser and come back later — nothing is lost.
+Saves automatically on every change.
 
 ---
 
-### Filtering and searching
+### Filtering jobs in the UI
 
-- **Search bar** — type any word from the job title, company, or location
-- **Platform filter** — LinkedIn, France Travail, or RemoteOK
-- **Tag filter** — IT, Sales, Security, Finance, Marketing, etc.
-- **Stat cards at the top** — click *Applied*, *Interview*, etc. to filter by status
-- **Export CSV** button — download everything visible as a spreadsheet
+- **Search bar** — title, company, location
+- **Platform** — LinkedIn, FranceTravail, Indeed, WTTJ, RemoteOK, HelloWork, APEC
+- **Poste** — livreur, conducteur, ouvrier, stockiste, vendeur, it support, marketer, gestion, ingénieur, facteur, technicien, opérateur, serrurier, testeur
+- **Domain** — logistique, transport, grande distribution, btp, industrie, agroalimentaire, santé, nettoyage, télécom, it, événementiel, retail, aéroport, imprimerie, immobilier
+- **Tag** — IT, Sales, Security, Finance, Marketing, etc.
+- **Skills** — CACES (any R-number), permis (any class), habilitation élec., HACCP, SST, AIPR, ADR, ISO 9001, Excel, SAP, WMS, Python, SQL, anglais — detected dynamically from job text, hover a chip for the full description
+- **Stat cards** — click Applied, Interview, etc. to filter by status
+- **Export CSV** — download everything visible (Skills column included)
 
 ---
 
 ## Running a search
 
-### 1. Install
+### 1. Optional: add API tokens
 
-```bash
-git clone https://github.com/YKritet/job-tracker.git
-cd job-tracker
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e .
-```
-
-### 2. Add API tokens (optional but recommended)
-
-Copy `.env.example` to `.env`:
+Copy `.env.example` to `.env` and fill in what you have:
 
 ```bash
 cp .env.example .env
 ```
 
-Then open `.env` and fill in what you have:
+| Token | Where to get it | Effect |
+|---|---|---|
+| `LINKEDIN_LI_AT` | LinkedIn DevTools → Cookies → `li_at` | More LinkedIn results |
+| `FRANCETRAVAIL_CLIENT_ID` | pole-emploi.io API keys | FR job listings |
+| `FRANCETRAVAIL_CLIENT_SECRET` | pole-emploi.io | FR job listings |
 
-**LinkedIn (`LINKEDIN_LI_AT`)** — improves LinkedIn result quality significantly.
+Everything works without tokens — you just get fewer results on authenticated platforms.
 
-How to get it:
-1. Log into [linkedin.com](https://linkedin.com) in your browser
-2. Open DevTools (F12) → **Application** tab → **Cookies** → `linkedin.com`
-3. Find the cookie named `li_at` and copy its value
-4. Paste it into `.env`:
-   ```
-   LINKEDIN_LI_AT=AQEDATxxxxxxxxxxxxxxxx...
-   ```
-
-> The tool works without this cookie — you just get fewer LinkedIn results. France Travail and RemoteOK need no tokens.
-
-**France Travail** — no token needed, uses their public API.
-
-**RemoteOK** — no token needed, uses their public API.
-
----
-
-### 3. Generate a search profile from your CV
-
-Drop your CV PDF (and optionally your motivation letter) in `assets/` — these are gitignored and never committed.
+### 2. Generate a profile from your CV
 
 ```bash
-# minimal
 applier parse-cv --cv assets/cv.pdf
-
-# with motivation letter (improves category detection)
+# With motivation letter:
 applier parse-cv --cv assets/cv.pdf --letter assets/letter.pdf
 ```
 
-This reads the PDFs, detects what kind of roles match your profile, and writes `profiles/auto.toml`.
+Writes `profiles/auto.toml`. Review and edit before searching.
 
-**Review and edit `profiles/auto.toml`** before searching — the detected roles are a starting point, not a final list. Trim or add role queries under `roles_fr` and `roles_en` to match what you actually want.
-
----
-
-### 4. Run a search
+### 3. Run a search
 
 ```bash
-applier search --profile profiles/auto.toml
-```
-
-Or use the default Hamza profile:
-
-```bash
+# Default (LinkedIn + FranceTravail + RemoteOK, Hamza's profile)
 applier search
+
+# All Tier 1 platforms, Île-de-France only
+applier search --platforms linkedin,francetravail,indeed_fr,wttj --locations "Île-de-France"
+
+# Add Tier 2 HTML scrapers (general)
+applier search --platforms linkedin,francetravail,indeed_fr,wttj,hellowork,apec,keljob
+
+# Add interim agency scrapers
+applier search --platforms francetravail,indeed_fr,adecco,manpower,randstad,synergie
+
+# Aviation/airport jobs
+applier search --platforms francetravail,indeed_fr,aeroemploi
+
+# Headhunter/cadre agencies
+applier search --platforms apec,cadremploi,hays,michaelpage
+
+# Freelance missions
+applier search --platforms malt
+
+# Student / étudiant jobs
+applier search --platforms francetravail,jobetudiant,side
+
+# Digital marketing profile with finance exclusions
+applier search --profile profiles/digital-marketing.toml
+
+# No filter (include alternance)
+applier search --no-filter
 ```
 
-This scrapes all platforms, saves results to `results/applier.db`, and exports `results/jobs.json`.
+### 4. Check company career pages
 
-### 5. Push results so others can see new jobs
+```bash
+# Check all 100+ watchlisted companies for page changes
+applier watchlist-check
+
+# Filter by sector
+applier watchlist-check --sector logistique
+
+# Adjust timeout (default 10s)
+applier watchlist-check --timeout 15
+```
+
+Reports a `CHANGED` flag if a career page content has changed since last check (SHA-16 diff). On first run, establishes baselines.
+
+### 5. See source check history
+
+```bash
+# Sources not checked in the last 7 days → STALE
+applier coverage
+
+# Custom staleness window
+applier coverage --days 3
+```
+
+### 6. Push results so Hamza can see them
 
 ```bash
 git add results/jobs.json
@@ -167,20 +174,72 @@ git commit -m "data: update jobs $(date +%Y-%m-%d)"
 git push
 ```
 
-Others then run `git pull` + `applier serve` and see the new jobs with their tracking intact.
+> **Do not commit:** `.env`, `jobs.db`, `assets/`, `profiles/auto.toml`, or anything under `.claude/` (agent session state). These are in `.gitignore`. Only `results/jobs.json` is meant to be shared as data.
 
 ---
 
 ## Profiles
 
-Search parameters live in `profiles/*.toml`. You can:
-- Generate one automatically: `applier parse-cv --cv assets/cv.pdf`
-- Or copy `profiles/hamza.toml` and edit manually
+Search profiles live in `profiles/*.toml`. Key sections:
 
-Key fields:
-- `roles_fr` — French job titles to search (used for FR locations)
-- `roles_en` — English job titles (used for international locations)
-- `locations` — list of cities/countries to search in
+```toml
+[search]
+roles_fr = ["livreur", "préparateur de commandes"]   # FR searches
+roles_en = ["delivery driver", "warehouse operator"]  # EN/international
+
+[[search.locations]]
+label = "Île-de-France"
+country = "FR"
+ft_location = "Île-de-France"
+
+[filter]
+exclude_keywords = ["comptabilité", "finance", "audit"]  # drop jobs with these words
+postes = ["livreur", "ouvrier"]                          # show only these postes in UI
+domains = ["logistique", "transport"]                    # show only these domains in UI
+```
+
+Profiles included:
+- `profiles/hamza.toml` — IT/hardware technico-commercial focus
+- `profiles/digital-marketing.toml` — Marketing roles, excludes finance/compta jobs
+
+---
+
+## Watchlist
+
+`watchlist/companies.toml` contains 100+ company career page URLs across 14 sectors:
+
+- transport · aéroport · logistique · grande distribution · retail · it
+- événementiel · industrie · agroalimentaire · btp · télécom · santé · nettoyage · interim
+
+Add any company with:
+```toml
+[[company]]
+name = "Acme Corp"
+sector = "logistique"
+careers_url = "https://acme.com/careers"
+```
+
+---
+
+## GitHub Actions — Daily Automation
+
+`.github/workflows/daily-search.yml` runs every day at 08:00 UTC:
+
+1. Runs `applier search` (all Tier 1 platforms, Île-de-France + France)
+2. Runs `applier watchlist-check`
+3. Commits `results/jobs.json` + `results/jobs.html`
+4. Sends a Telegram message with job count
+
+**Required GitHub secrets:**
+| Secret | Required | Description |
+|---|---|---|
+| `LINKEDIN_LI_AT` | No | LinkedIn cookie |
+| `FRANCETRAVAIL_CLIENT_ID` | No | FT API key |
+| `FRANCETRAVAIL_CLIENT_SECRET` | No | FT API secret |
+| `TELEGRAM_BOT_TOKEN` | No | Telegram bot token (skip notification if absent) |
+| `TELEGRAM_CHAT_ID` | No | Telegram chat/user ID |
+
+Trigger manually from GitHub → Actions → Daily Job Search → Run workflow.
 
 ---
 
@@ -191,39 +250,76 @@ Key fields:
 | `applier parse-cv` | Parse a CV PDF and generate a search profile |
 | `applier search` | Run a full search, save to DB, export JSON |
 | `applier serve` | Start the web UI at http://localhost:5050 |
-| `applier platforms` | List supported platforms |
+| `applier watchlist-check` | Check company career pages for changes |
+| `applier coverage` | Show source check history (flag stale sources) |
+| `applier platforms` | List all supported platforms with tiers |
 
-### Options for `applier parse-cv`
-
-| Option | Default | Description |
-|---|---|---|
-| `--cv` | `assets/cv.pdf` | Path to CV PDF |
-| `--letter` | — | Path to motivation letter PDF (optional) |
-| `--output` | `profiles/auto.toml` | Where to write the generated profile |
-| `--name` | — | Override the detected candidate name |
-
-### Options for `applier search`
+### `applier search` options
 
 | Option | Default | Description |
 |---|---|---|
-| `--profile` | `profiles/hamza.toml` | Which profile to use |
-| `--platforms` | `linkedin,francetravail,remoteok` | Which platforms to search |
-| `--locations` | `all` | Which locations from the profile |
+| `--profile` | `profiles/hamza.toml` | Search profile |
+| `--platforms` | `linkedin,francetravail,remoteok` | Platforms to use |
+| `--locations` | `all` | Locations from profile |
 | `--count` | `25` | Max results per query |
-| `--no-filter` | off | Include alternance offers |
+| `--output` | `results/jobs.html` | Output file |
+| `--no-filter` | off | Include alternance + skip profile exclusions |
+
+### `applier watchlist-check` options
+
+| Option | Default | Description |
+|---|---|---|
+| `--watchlist` | `watchlist/companies.toml` | Path to watchlist |
+| `--timeout` | `10` | HTTP timeout per request (seconds) |
+| `--sector` | (all) | Filter by sector |
+
+### `applier coverage` options
+
+| Option | Default | Description |
+|---|---|---|
+| `--days` | `7` | Mark sources not checked in N days as STALE |
+
+---
+
+## Platforms
+
+| Platform | Method | Scope |
+|---|---|---|
+| `linkedin` | Guest API | Global |
+| `francetravail` | REST API | FR only |
+| `indeed_fr` | RSS feed | FR |
+| `wttj` | JSON API | Global |
+| `remoteok` | JSON API | Remote/global |
+| `hellowork` | HTML scraper | FR |
+| `apec` | HTML scraper | FR (cadres) |
+| `keljob` | HTML scraper | FR |
+| `aeroemploi` | HTML scraper | FR (aéroport/aviation) |
+| `adecco` | HTML scraper | FR (intérim) |
+| `manpower` | HTML scraper | FR (intérim) |
+| `randstad` | HTML scraper | FR (intérim) |
+| `synergie` | HTML scraper | FR (intérim) |
+| `hays` | HTML scraper | FR (cadres/intérim) |
+| `michaelpage` | HTML scraper | FR (cadres) |
+| `cadremploi` | HTML scraper | FR (cadres) |
+| `malt` | HTML scraper | FR (freelance) |
+| `jobetudiant` | HTML scraper | FR (étudiant) |
+| `side` | HTML scraper | FR (étudiant/intérim) |
 
 ---
 
 ## Troubleshooting
 
-**Browser doesn't open automatically**
-→ Open `http://localhost:5050` manually in your browser.
+**Browser doesn't open**
+→ Open `http://localhost:5050` manually.
 
 **"command not found: applier"**
-→ Make sure you activated the virtual environment: `source .venv/bin/activate`
+→ Activate your environment: `source .venv/bin/activate` (or use `uv run applier`).
 
-**Jobs not updating after git pull**
-→ Click the **Refresh** button in the top-right of the web interface.
+**Jobs not showing after git pull**
+→ Click **Refresh** in the top-right of the web UI.
 
-**Port 5050 already in use**
-→ Run `applier serve --port 5051` and open `http://localhost:5051`
+**Port 5050 in use**
+→ `applier serve --port 5051`
+
+**HelloWork / APEC returns 0 results**
+→ These sites have bot protection. Results may vary. Tier 1 platforms (FranceTravail, Indeed RSS, WTTJ) are more reliable.

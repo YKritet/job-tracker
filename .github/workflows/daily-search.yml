@@ -1,0 +1,73 @@
+name: Daily Job Search
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # 08:00 UTC every day
+  workflow_dispatch:        # allow manual trigger from GitHub UI
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up uv + Python 3.12
+        uses: astral-sh/setup-uv@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run search (all Tier 1 platforms)
+        env:
+          FRANCETRAVAIL_CLIENT_ID:     ${{ secrets.FRANCETRAVAIL_CLIENT_ID }}
+          FRANCETRAVAIL_CLIENT_SECRET: ${{ secrets.FRANCETRAVAIL_CLIENT_SECRET }}
+          LINKEDIN_LI_AT:              ${{ secrets.LINKEDIN_LI_AT }}
+        run: |
+          uv run applier search \
+            --profile profiles/hamza.toml \
+            --platforms linkedin,francetravail,indeed_fr,wttj \
+            --locations "Île-de-France,France" \
+            --count 50 \
+            --output results/jobs.html
+
+      - name: Watchlist check (career pages)
+        run: uv run applier watchlist-check --watchlist watchlist/companies.toml || true
+
+      - name: Count jobs in DB
+        id: stats
+        run: |
+          count=$(python -c "
+          import json, pathlib
+          p = pathlib.Path('results/jobs.json')
+          print(len(json.loads(p.read_text())) if p.exists() else 0)
+          ")
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Commit updated results
+        run: |
+          git config user.name  "applier-bot"
+          git config user.email "applier-bot@users.noreply.github.com"
+          git add results/jobs.json results/jobs.html 2>/dev/null || true
+          git diff --staged --quiet || \
+            git commit -m "data: daily search $(date -u +%Y-%m-%d) — ${{ steps.stats.outputs.count }} jobs"
+          git push
+
+      - name: Telegram notification
+        if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' }}
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID:   ${{ secrets.TELEGRAM_CHAT_ID }}
+          COUNT:     ${{ steps.stats.outputs.count }}
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            -d chat_id="${CHAT_ID}" \
+            -d parse_mode="HTML" \
+            -d text="<b>Applier daily run</b> $(date -u +%Y-%m-%d)%0A${COUNT} jobs in DB%0A%0AOpen tracker: <code>git pull && applier serve</code>"

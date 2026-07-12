@@ -44,6 +44,16 @@ sector = "transport"
 careers_url = "https://www.amazon.jobs/fr/location/france"
 
 [[company]]
+name = "Bolt France"
+sector = "transport"
+careers_url = "https://careers.bolt.eu"
+
+[[company]]
+name = "XPO Logistics France"
+sector = "transport"
+careers_url = "https://www.xpo.com/fr-fr/carrieres"
+
+[[company]]
 name = "Getir France"
 sector = "transport"
 careers_url = "https://getir.com/careers"
@@ -248,6 +258,16 @@ careers_url = "https://www.compass-group.fr/recrutement"
 name = "Semmaris"
 sector = "événementiel"
 careers_url = "https://www.semmaris.fr/rungis/emploi"
+
+[[company]]
+name = "Havas Events"
+sector = "événementiel"
+careers_url = "https://www.havas.com/careers"
+
+[[company]]
+name = "Crous Île-de-France"
+sector = "événementiel"
+careers_url = "https://www.crous-paris.fr/emplois-et-carrieres"
 
 # ── Industrie IDF ─────────────────────────────────────────────────────────
 [[company]]

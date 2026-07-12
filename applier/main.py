@@ -13,7 +13,26 @@ from .search.francetravail import FranceTravailSearcher
 from .search.remoteok import RemoteOKSearcher
 from .search.indeed_fr import IndeedFRSearcher
 from .search.wttj import WTTJSearcher
-from .search.base import JobResult, auto_tag, detect_poste, detect_domain
+from .search.hellowork import HelloWorkSearcher
+from .search.apec import APECSearcher
+from .search.keljob import KeljobSearcher
+from .search.aeroemploi import AeroEmploiSearcher
+from .search.adecco import AdeccoSearcher
+from .search.manpower import ManpowerSearcher
+from .search.randstad import RandstadSearcher
+from .search.synergie import SynergieSearcher
+from .search.hays import HaysSearcher
+from .search.michaelpage import MichaelPageSearcher
+from .search.malt import MaltSearcher
+from .search.jobetudiant import JobEtudiantSearcher
+from .search.side import SideSearcher
+from .search.cadremploi import CadrEmploiSearcher
+from .search.meteojob import MeteojobSearcher
+from .search.jobijoba import JobijobaSearcher
+from .search.monster_fr import MonsterFRSearcher
+from .search.optioncarriere import OptionCarriereSearcher
+from .search.staffme import StaffmeSearcher
+from .search.base import JobResult, auto_tag, detect_poste, detect_domain, detect_skills
 from . import db, export
 
 load_dotenv()
@@ -48,7 +67,7 @@ def _make_exclude_check(exclude_kws: tuple[str, ...]):
 @app.command()
 def search(
     profile: Annotated[Path, typer.Option("--profile", "-p")] = Path("profiles/hamza.toml"),
-    platforms: Annotated[str, typer.Option(help="Comma-separated: linkedin,francetravail,remoteok,indeed_fr,wttj")] = "linkedin,francetravail,remoteok",
+    platforms: Annotated[str, typer.Option(help="Comma-separated: linkedin,francetravail,indeed_fr,wttj,hellowork,apec,keljob,aeroemploi,adecco,manpower,randstad,synergie,hays,michaelpage,malt,jobetudiant,side,cadremploi,meteojob,jobijoba,monster_fr,optioncarriere,staffme,remoteok")] = "linkedin,francetravail,indeed_fr,wttj,hellowork,keljob,meteojob,jobijoba,monster_fr,optioncarriere",
     locations: Annotated[str, typer.Option(help="Location labels from profile, or 'all'")] = "all",
     count: Annotated[int, typer.Option(help="Max results per query")] = 25,
     output: Annotated[str, typer.Option(help="Output file (.html/.xlsx/.csv/.json)")] = "results/jobs.html",
@@ -106,8 +125,9 @@ def search(
                 continue
             r.pulled_at = pulled_at
             r.tags  = auto_tag(r.title, r.location, r.contract)
-            r.poste = detect_poste(r.title)
+            r.poste  = detect_poste(r.title)
             r.domain = detect_domain(r.title, r.company)
+            r.skills = detect_skills(r.title)
             seen_urls.add(r.url)
             all_results.append(r)
             added += 1
@@ -157,6 +177,177 @@ def search(
                     console.print(f"  [red]WTTJ:[/red] {e}")
                     db.log_source_check(f"wttj/{label}/{role[:30]}", 0, "error")
 
+            if "hellowork" in active_platforms and country == "FR":
+                try:
+                    raw = HelloWorkSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"HelloWork · {role[:40]}")
+                    db.log_source_check(f"hellowork/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]HelloWork:[/red] {e}")
+                    db.log_source_check(f"hellowork/{label}/{role[:30]}", 0, "error")
+
+            if "apec" in active_platforms and country == "FR":
+                try:
+                    raw = APECSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"APEC · {role[:40]}")
+                    db.log_source_check(f"apec/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]APEC:[/red] {e}")
+                    db.log_source_check(f"apec/{label}/{role[:30]}", 0, "error")
+
+            if "keljob" in active_platforms and country == "FR":
+                try:
+                    raw = KeljobSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Keljob · {role[:40]}")
+                    db.log_source_check(f"keljob/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Keljob:[/red] {e}")
+                    db.log_source_check(f"keljob/{label}/{role[:30]}", 0, "error")
+
+            if "aeroemploi" in active_platforms and country == "FR":
+                try:
+                    raw = AeroEmploiSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"AeroEmploi · {role[:40]}")
+                    db.log_source_check(f"aeroemploi/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]AeroEmploi:[/red] {e}")
+                    db.log_source_check(f"aeroemploi/{label}/{role[:30]}", 0, "error")
+
+            if "adecco" in active_platforms and country == "FR":
+                try:
+                    raw = AdeccoSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Adecco · {role[:40]}")
+                    db.log_source_check(f"adecco/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Adecco:[/red] {e}")
+                    db.log_source_check(f"adecco/{label}/{role[:30]}", 0, "error")
+
+            if "manpower" in active_platforms and country == "FR":
+                try:
+                    raw = ManpowerSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Manpower · {role[:40]}")
+                    db.log_source_check(f"manpower/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Manpower:[/red] {e}")
+                    db.log_source_check(f"manpower/{label}/{role[:30]}", 0, "error")
+
+            if "randstad" in active_platforms and country == "FR":
+                try:
+                    raw = RandstadSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Randstad · {role[:40]}")
+                    db.log_source_check(f"randstad/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Randstad:[/red] {e}")
+                    db.log_source_check(f"randstad/{label}/{role[:30]}", 0, "error")
+
+            if "synergie" in active_platforms and country == "FR":
+                try:
+                    raw = SynergieSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Synergie · {role[:40]}")
+                    db.log_source_check(f"synergie/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Synergie:[/red] {e}")
+                    db.log_source_check(f"synergie/{label}/{role[:30]}", 0, "error")
+
+            if "hays" in active_platforms and country == "FR":
+                try:
+                    raw = HaysSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Hays · {role[:40]}")
+                    db.log_source_check(f"hays/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Hays:[/red] {e}")
+                    db.log_source_check(f"hays/{label}/{role[:30]}", 0, "error")
+
+            if "michaelpage" in active_platforms and country == "FR":
+                try:
+                    raw = MichaelPageSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Michael Page · {role[:40]}")
+                    db.log_source_check(f"michaelpage/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Michael Page:[/red] {e}")
+                    db.log_source_check(f"michaelpage/{label}/{role[:30]}", 0, "error")
+
+            if "malt" in active_platforms and country == "FR":
+                try:
+                    raw = MaltSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Malt · {role[:40]}")
+                    db.log_source_check(f"malt/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Malt:[/red] {e}")
+                    db.log_source_check(f"malt/{label}/{role[:30]}", 0, "error")
+
+            if "jobetudiant" in active_platforms and country == "FR":
+                try:
+                    raw = JobEtudiantSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"JobEtudiant · {role[:40]}")
+                    db.log_source_check(f"jobetudiant/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]JobEtudiant:[/red] {e}")
+                    db.log_source_check(f"jobetudiant/{label}/{role[:30]}", 0, "error")
+
+            if "side" in active_platforms and country == "FR":
+                try:
+                    raw = SideSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Side · {role[:40]}")
+                    db.log_source_check(f"side/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Side:[/red] {e}")
+                    db.log_source_check(f"side/{label}/{role[:30]}", 0, "error")
+
+            if "cadremploi" in active_platforms and country == "FR":
+                try:
+                    raw = CadrEmploiSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Cadremploi · {role[:40]}")
+                    db.log_source_check(f"cadremploi/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Cadremploi:[/red] {e}")
+                    db.log_source_check(f"cadremploi/{label}/{role[:30]}", 0, "error")
+
+            if "meteojob" in active_platforms and country == "FR":
+                try:
+                    raw = MeteojobSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Meteojob · {role[:40]}")
+                    db.log_source_check(f"meteojob/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Meteojob:[/red] {e}")
+                    db.log_source_check(f"meteojob/{label}/{role[:30]}", 0, "error")
+
+            if "jobijoba" in active_platforms and country == "FR":
+                try:
+                    raw = JobijobaSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Jobijoba · {role[:40]}")
+                    db.log_source_check(f"jobijoba/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Jobijoba:[/red] {e}")
+                    db.log_source_check(f"jobijoba/{label}/{role[:30]}", 0, "error")
+
+            if "monster_fr" in active_platforms and country == "FR":
+                try:
+                    raw = MonsterFRSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Monster · {role[:40]}")
+                    db.log_source_check(f"monster_fr/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Monster FR:[/red] {e}")
+                    db.log_source_check(f"monster_fr/{label}/{role[:30]}", 0, "error")
+
+            if "optioncarriere" in active_platforms and country == "FR":
+                try:
+                    raw = OptionCarriereSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"OptionCarriere · {role[:40]}")
+                    db.log_source_check(f"optioncarriere/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]OptionCarriere:[/red] {e}")
+                    db.log_source_check(f"optioncarriere/{label}/{role[:30]}", 0, "error")
+
+            if "staffme" in active_platforms and country == "FR":
+                try:
+                    raw = StaffmeSearcher().search(role, ft_location or label, count)
+                    add_results(raw, f"Staffme · {role[:40]}")
+                    db.log_source_check(f"staffme/{label}/{role[:30]}", len(raw))
+                except Exception as e:
+                    console.print(f"  [red]Staffme:[/red] {e}")
+                    db.log_source_check(f"staffme/{label}/{role[:30]}", 0, "error")
+
     if "remoteok" in active_platforms:
         console.print(f"\n[cyan]── Remote (global)[/cyan]")
         for tag in ["sales", "marketing", "it", "business-development", "technical-account-manager"]:
@@ -187,6 +378,11 @@ def search(
     db.init_db()
     db.upsert_jobs(all_results)
     console.print(f"[dim]  → saved to DB ({db._DB_PATH})[/dim]")
+
+    # Always purge jobs older than 30 days
+    deleted = db.purge_old_jobs(30)
+    if deleted:
+        console.print(f"[dim]  → purged {deleted} job(s) older than 30 days[/dim]")
 
     # Always export jobs.json for sharing via GitHub
     json_path = Path("results/jobs.json")
@@ -272,11 +468,126 @@ def parse_cv(
 @app.command()
 def platforms():
     """List supported platforms."""
-    console.print("  [green]linkedin[/green]      — LinkedIn guest API (no auth)")
-    console.print("  [green]francetravail[/green] — France Travail API (FR only)")
-    console.print("  [green]indeed_fr[/green]     — Indeed France RSS feed")
-    console.print("  [green]wttj[/green]          — Welcome to the Jungle public API")
-    console.print("  [green]remoteok[/green]      — RemoteOK public API (remote, global)")
+    console.print("  [green]linkedin[/green]      — LinkedIn guest API (no auth)              [Tier 1]")
+    console.print("  [green]francetravail[/green] — France Travail API (FR only)               [Tier 1]")
+    console.print("  [green]indeed_fr[/green]     — Indeed France RSS feed                     [Tier 1]")
+    console.print("  [green]wttj[/green]          — Welcome to the Jungle public API           [Tier 1]")
+    console.print("  [green]remoteok[/green]      — RemoteOK public API (remote, global)       [Tier 1]")
+    console.print("  [green]hellowork[/green]     — HelloWork HTML scraper (FR)                [Tier 2]")
+    console.print("  [green]apec[/green]          — APEC HTML scraper (FR, cadres)             [Tier 2]")
+    console.print("  [green]keljob[/green]        — Keljob HTML scraper (FR)                   [Tier 2]")
+    console.print("  [green]aeroemploi[/green]    — AeroEmploi HTML scraper (FR, aéroport)     [Tier 2]")
+    console.print("  [green]adecco[/green]        — Adecco HTML scraper (FR, intérim)          [Tier 2]")
+    console.print("  [green]manpower[/green]      — Manpower HTML scraper (FR, intérim)        [Tier 2]")
+    console.print("  [green]randstad[/green]      — Randstad HTML scraper (FR, intérim)        [Tier 2]")
+    console.print("  [green]synergie[/green]      — Synergie HTML scraper (FR, intérim)        [Tier 2]")
+    console.print("  [green]hays[/green]          — Hays HTML scraper (FR, cadres/intérim)     [Tier 2]")
+    console.print("  [green]michaelpage[/green]   — Michael Page HTML scraper (FR, cadres)     [Tier 2]")
+    console.print("  [green]cadremploi[/green]    — Cadremploi HTML scraper (FR, cadres)       [Tier 2]")
+    console.print("  [green]malt[/green]          — Malt HTML scraper (FR, freelance)          [Tier 2]")
+    console.print("  [green]jobetudiant[/green]   — JobEtudiant HTML scraper (FR, étudiant)    [Tier 2]")
+    console.print("  [green]side[/green]          — Side HTML scraper (FR, étudiant/intérim)   [Tier 2]")
+    console.print("  [green]meteojob[/green]      — Meteojob HTML scraper (FR, tous secteurs)  [Tier 2]")
+    console.print("  [green]jobijoba[/green]      — Jobijoba HTML scraper (FR, agrégateur)     [Tier 2]")
+    console.print("  [green]monster_fr[/green]    — Monster France HTML scraper                [Tier 2]")
+    console.print("  [green]optioncarriere[/green]— OptionCarriere HTML scraper (FR)           [Tier 2]")
+    console.print("  [green]staffme[/green]       — Staffme Playwright scraper (FR, missions)  [Tier 3]")
+
+
+@app.command()
+def purge(
+    days: Annotated[int, typer.Option("--days", help="Delete jobs older than N days")] = 30,
+):
+    """Delete stale jobs from the DB (default: older than 30 days)."""
+    db.init_db()
+    deleted = db.purge_old_jobs(days)
+    console.print(f"[green]Deleted {deleted} job(s) older than {days} days.[/green]")
+
+
+@app.command("watchlist-check")
+def watchlist_check(
+    watchlist: Annotated[Path, typer.Option("--watchlist", "-w", help="Path to companies.toml")] = Path("watchlist/companies.toml"),
+    timeout: Annotated[int, typer.Option(help="HTTP timeout per request (seconds)")] = 10,
+    sector: Annotated[str, typer.Option(help="Filter by sector (e.g. logistique, transport)")] = "",
+):
+    """Fetch company career pages, detect content changes, and log results to DB."""
+    import hashlib
+    import httpx
+
+    if not watchlist.exists():
+        console.print(f"[red]Watchlist not found: {watchlist}[/red]")
+        raise typer.Exit(1)
+
+    with watchlist.open("rb") as f:
+        wl = tomllib.load(f)
+
+    companies = wl.get("company", [])
+    if sector:
+        companies = [c for c in companies if c.get("sector", "").lower() == sector.lower()]
+
+    if not companies:
+        console.print("[yellow]No companies to check.[/yellow]")
+        return
+
+    db.init_db()
+
+    table = Table(
+        title=f"Career Page Check ({len(companies)} companies)",
+        show_lines=False,
+        expand=True,
+    )
+    table.add_column("Company", style="cyan", no_wrap=True)
+    table.add_column("Sector", style="dim")
+    table.add_column("HTTP", justify="center")
+    table.add_column("Change", justify="center")
+
+    changed: list[dict] = []
+    ua = {"User-Agent": "Mozilla/5.0 (compatible; ApplierBot/1.0)"}
+
+    with httpx.Client(timeout=timeout, follow_redirects=True, headers=ua) as client:
+        for c in companies:
+            name = c["name"]
+            url = c["careers_url"]
+            sec = c.get("sector", "")
+            try:
+                resp = client.get(url)
+                resp.raise_for_status()
+                h = hashlib.sha256(resp.text.encode()).hexdigest()[:16]
+                prev = db.get_watchlist_snap(name)
+                is_new = prev is None
+                changed_flag = prev is not None and prev["content_hash"] != h
+                db.set_watchlist_snap(name, url, h, "ok")
+                db.log_source_check(f"watchlist/{name}", 0, "ok")
+
+                http_str = "[green]OK[/green]"
+                if is_new:
+                    change_str = "[dim]baseline[/dim]"
+                elif changed_flag:
+                    change_str = "[bold yellow]CHANGED[/bold yellow]"
+                    changed.append(c)
+                else:
+                    change_str = "[dim]same[/dim]"
+            except httpx.HTTPStatusError as e:
+                db.set_watchlist_snap(name, url, "", "error")
+                db.log_source_check(f"watchlist/{name}", 0, "error")
+                http_str = f"[red]{e.response.status_code}[/red]"
+                change_str = "[dim]—[/dim]"
+            except Exception as e:
+                db.set_watchlist_snap(name, url, "", "error")
+                db.log_source_check(f"watchlist/{name}", 0, "error")
+                http_str = "[red]ERR[/red]"
+                change_str = f"[dim]{str(e)[:30]}[/dim]"
+
+            table.add_row(name, sec, http_str, change_str)
+
+    console.print(table)
+
+    if changed:
+        console.print(f"\n[bold yellow]{len(changed)} career page(s) changed:[/bold yellow]")
+        for c in changed:
+            console.print(f"  [yellow]→[/yellow] {c['name']} — {c['careers_url']}")
+    else:
+        console.print(f"\n[dim]No changes across {len(companies)} career pages.[/dim]")
 
 
 @app.command()

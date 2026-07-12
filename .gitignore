@@ -8,3 +8,9 @@ results/*
 !results/jobs.json
 assets/
 profiles/auto.toml
+jobs.db
+.claude/current.md
+.claude/sessions/
+.claude/memory-lane/
+.claude/tickets/
+.claude/settings.local.json
